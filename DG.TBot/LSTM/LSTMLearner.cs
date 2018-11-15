@@ -257,20 +257,7 @@ namespace DG.TBot.LSTM
             return layerDescription;
         }
 
-        public delegate void LearningHandler(object source, LearningEvent e);
         public event LearningHandler Learning;
-        public class LearningEvent
-        {
-            public LearningEvent(double progress, int currentIteration, double learningRate)
-            {
-                Progress = progress;
-                CurrentIteration = currentIteration;
-                LearningRate = learningRate;
-            }
-            public double Progress { get; set; }
-            public int CurrentIteration { get; set; }
-            public double LearningRate { get; set; }
-        }
 
         public delegate void GeneratingHandler(object source, GeneratingEvent e);
         public event GeneratingHandler Generating;

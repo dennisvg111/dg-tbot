@@ -40,8 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ENN\ENNLayer.cs" />
+    <Compile Include="ENN\ENNLearner.cs" />
+    <Compile Include="ENN\Network.cs" />
+    <Compile Include="ENN\TrainingData.cs" />
     <Compile Include="IInterpreter.cs" />
+    <Compile Include="Interpreters\BoolInterpreter.cs" />
     <Compile Include="Interpreters\CharInterpreter.cs" />
+    <Compile Include="Interpreters\IntInterpreter.cs" />
     <Compile Include="Interpreters\StaticDictionaryInterpreter.cs" />
     <Compile Include="LSTM\Layer.cs" />
     <Compile Include="LSTM\LSTMLayer.cs" />
@@ -49,6 +55,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LSTM\RNNLayer.cs" />
     <Compile Include="LSTM\SoftMaxLayer.cs" />
+    <Compile Include="Utilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
