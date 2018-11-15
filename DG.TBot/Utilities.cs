@@ -33,6 +33,27 @@ namespace DG.TBot
                 return rnd.NextDouble() < chance;
             }
         }
+
+        /// <summary>
+        /// returns a weighted random int. Larger bias makes it more likely to return low numbers
+        /// </summary>
+        public static int WeightedNext(this Random random, int min, int max, float bias)
+        {
+            double returnValue = Math.Floor(min + (max - min) * Math.Pow(random.NextDouble(), bias));
+            returnValue = Math.Min(max - 1, returnValue);
+            returnValue = Math.Max(min, returnValue);
+            return (int)returnValue;
+        }
+
+        public static T WeightedRandomOrDefault<T>(this IEnumerable<T> enumerable, float bias)
+        {
+            if (enumerable.Count() == 0)
+            {
+                return default(T);
+            }
+            int index = rnd.WeightedNext(0, enumerable.Count(), bias);
+            return enumerable.ElementAt(index);
+        }
     }
 
     public delegate void LearningHandler(object source, LearningEvent e);

@@ -45,8 +45,7 @@ namespace DG.TBot.ENN
             currentNetwork = new List<ENNLayer>();
 
             currentNetwork.Add(new ENNLayer(this.inputSize, 5));
-            currentNetwork.Add(new ENNLayer(5, 50));
-            currentNetwork.Add(new ENNLayer(50, 5));
+            currentNetwork.Add(new ENNLayer(5, 5));
             currentNetwork.Add(new ENNLayer(5, this.outputSize));
             LearningRate = 0.1;
             SetLearningRate(LearningRate);
@@ -125,7 +124,7 @@ namespace DG.TBot.ENN
                 {
 
                 }
-                currentNetwork = networks.OrderBy(n => deltas[n]).ThenByDescending(n => correct[n]).ThenBy(n => results[n]).First();
+                currentNetwork = networks.OrderBy(n => deltas[n]).ThenByDescending(n => correct[n]).ThenBy(n => results[n]).WeightedRandomOrDefault(15);
 
                 if (Delta != deltas[currentNetwork])
                 {
@@ -150,7 +149,7 @@ namespace DG.TBot.ENN
                 }
                 loss_p = loss_p * 0.8 + Loss * 0.2;
 
-                LearningRate = LearningRate > 25 ? 0.1 : LearningRate;
+                LearningRate = LearningRate > 25 ? 0.02 : LearningRate;
                 SetLearningRate(LearningRate);
 
                 Generation++;
