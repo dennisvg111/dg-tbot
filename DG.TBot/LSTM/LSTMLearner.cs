@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DG.TBot
+namespace DG.TBot.LSTM
 {
     public class LSTMLearner<T>
     {

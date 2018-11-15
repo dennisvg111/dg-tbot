@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DG.TBot
+namespace DG.TBot.LSTM
 {
     /// <summary>
     /// Long short term memory neural network layer.
     /// </summary>
-    public class LSTMLayer : Layer
+    internal class LSTMLayer : Layer
     {
         // Dimensions.
         private int size_total;

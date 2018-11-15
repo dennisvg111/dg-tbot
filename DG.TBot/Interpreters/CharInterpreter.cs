@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DG.TBot.Interpreters
 {
-    public class CharacterInterpreter : IInterpreter<char>
+    public class CharInterpreter : IInterpreter<char>
     {
         public int VocabularySize
         {

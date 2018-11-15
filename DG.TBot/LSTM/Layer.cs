@@ -1,15 +1,12 @@
-﻿
-
-
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
-namespace DG.TBot
+namespace DG.TBot.LSTM
 {
     /// <summary>
     /// Base class for all neural network layers.
     /// </summary>
-    public abstract class Layer
+    internal abstract class Layer
     {
         public Layer(int bufferSize)
         {

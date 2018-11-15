@@ -41,14 +41,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IInterpreter.cs" />
-    <Compile Include="Interpreters\CharacterInterpreter.cs" />
+    <Compile Include="Interpreters\CharInterpreter.cs" />
     <Compile Include="Interpreters\StaticDictionaryInterpreter.cs" />
-    <Compile Include="Layer.cs" />
-    <Compile Include="LSTMLayer.cs" />
-    <Compile Include="LSTMLearner.cs" />
+    <Compile Include="LSTM\Layer.cs" />
+    <Compile Include="LSTM\LSTMLayer.cs" />
+    <Compile Include="LSTM\LSTMLearner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RNNLayer.cs" />
-    <Compile Include="SoftMaxLayer.cs" />
+    <Compile Include="LSTM\RNNLayer.cs" />
+    <Compile Include="LSTM\SoftMaxLayer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

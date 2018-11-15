@@ -2,16 +2,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DG.TBot
+namespace DG.TBot.LSTM
 {
     /// <summary>
-    /// Recurrent neural network layer implementing backpropagation through time.
+    /// Pass through neural network layer implementing SoftMax output.
     /// </summary>
-    public class RNNLayer : Layer
+    internal class SoftMaxLayer : Layer
     {
-        // Dimensions.
-        private int size_total;
-
         // State.
         private double[][] node_output;
         private double[][] vcx;
@@ -28,16 +25,10 @@ namespace DG.TBot
         private double[] cb_node_output;
         private double[][] cw_node_output;
 
-        public override int Count()
+        public SoftMaxLayer(int size_input, int size_output, int bufferSize) : base(bufferSize)
         {
-            return size_output + size_total * size_output;
-        }
-
-        public RNNLayer(int size_input, int size_output, int bufferSize) : base(bufferSize)
-        {
-            this.size_input = size_input;
             this.size_output = size_output;
-            size_total = size_input + size_output;
+            this.size_input = size_input;
 
             ResetState();
             ResetParameters();
@@ -45,29 +36,27 @@ namespace DG.TBot
             ResetCaches();
         }
 
+        public override int Count()
+        {
+            return size_output + size_input * size_output;
+        }
+
         public override double[][] Forward(double[][] buffer, bool reset)
         {
-            if (reset) node_output[0] = new double[size_output];
-            else node_output[0] = node_output[bufferSize - 1].ToArray();
-
             for (var t = 1; t < bufferSize; t++)
             {
-                buffer[t].CopyTo(vcx[t], 0);
-                node_output[t - 1].CopyTo(vcx[t], size_input);
-
+                vcx[t] = buffer[t];
                 var row_vcx_state = vcx[t];
 
-                node_output[t] = new double[size_output];
+                var vy = b_node_output.ToArray();
                 Parallel.For(0, size_output, options, j =>
                 {
-                    var sum = b_node_output[j];
-
-                    var row = w_node_output[j];
-                    for (var i = 0; i < size_total; i++)
-                        sum += row_vcx_state[i] * row[i];
-
-                    node_output[t][j] = Tanh(sum);
+                    var row_w_node_output = w_node_output[j];
+                    for (var i = 0; i < size_input; i++)
+                        vy[j] += row_vcx_state[i] * row_w_node_output[i];
                 });
+
+                node_output[t] = Calculate(vy);
             }
 
             return node_output;
@@ -76,37 +65,24 @@ namespace DG.TBot
         public override double[][] Backward(double[][] grads)
         {
             var grads_out = new double[bufferSize][];
-            var dy_prev = new double[size_output];
-
             for (var t = bufferSize - 1; t > 0; t--)
             {
-                grads_out[t] = new double[size_output];
-                var row_grads_out = grads_out[t];
-
-                var dy = dy_prev.ToArray();
-                dy_prev = new double[size_output];
-
-                var row_vcx = vcx[t];
-
+                var row_vcx_state = vcx[t];
+                var row_grads_out = new double[size_input];
                 Parallel.For(0, size_output, options, j =>
                 {
-                    dy[j] += Clip(grads[t][j]);
-                    dy[j] = dTanh(node_output[t][j]) * dy[j];
-                    db_node_output[j] += dy[j];
+                    db_node_output[j] += grads[t][j];
 
                     var row_w_node_output = w_node_output[j];
                     var row_dw_node_output = dw_node_output[j];
 
-                    for (var i = 0; i < size_total; i++)
+                    for (var i = 0; i < size_input; i++)
                     {
-                        row_dw_node_output[i] += row_vcx[i] * dy[j];
-
-                        if (i < size_input)
-                            row_grads_out[i] += row_w_node_output[i] * dy[j];
-                        else
-                            dy_prev[i - size_input] += row_w_node_output[i] * dy[j];
+                        row_grads_out[i] += row_w_node_output[i] * grads[t][j];
+                        row_dw_node_output[i] += row_vcx_state[i] * grads[t][j];
                     }
                 });
+                grads_out[t] = row_grads_out;
             }
 
             Update();
@@ -123,7 +99,7 @@ namespace DG.TBot
             for (var i = 0; i < bufferSize; i++)
             {
                 node_output[i] = new double[size_output];
-                vcx[i] = new double[size_total];
+                vcx[i] = new double[size_input];
             }
         }
 
@@ -134,8 +110,8 @@ namespace DG.TBot
 
             for (var j = 0; j < size_output; j++)
             {
-                w_node_output[j] = new double[size_total];
-                for (var i = 0; i < size_total; i++)
+                w_node_output[j] = new double[size_input];
+                for (var i = 0; i < size_input; i++)
                     w_node_output[j][i] = RandomWeight();
             }
         }
@@ -146,7 +122,7 @@ namespace DG.TBot
             dw_node_output = new double[size_output][];
 
             for (var i = 0; i < size_output; i++)
-                dw_node_output[i] = new double[size_total];
+                dw_node_output[i] = new double[size_input];
         }
 
         protected override void ResetCaches()
@@ -160,7 +136,7 @@ namespace DG.TBot
 
         protected override void Update()
         {
-            for (var j = 0; j < size_output; j++)
+            Parallel.For(0, size_output, options, j =>
             {
                 cb_node_output[j] = rmsDecay * cb_node_output[j] + (1 - rmsDecay) * Math.Pow(db_node_output[j], 2);
                 b_node_output[j] -= Clip(db_node_output[j]) * LearningRate / Math.Sqrt(cb_node_output[j] + 1e-6);
@@ -170,7 +146,20 @@ namespace DG.TBot
                     cw_node_output[j][i] = rmsDecay * cw_node_output[j][i] + (1 - rmsDecay) * Math.Pow(cw_node_output[j][i], 2);
                     w_node_output[j][i] -= Clip(dw_node_output[j][i]) * LearningRate / Math.Sqrt(cw_node_output[j][i] + 1e-6);
                 }
-            }
+            });
+        }
+
+        private static double[] Calculate(double[] vx)
+        {
+            var sum = 0.0;
+            var length = vx.Length;
+            for (var i = 0; i < length; i++) sum += Math.Exp(vx[i]);
+
+            if (double.IsInfinity(sum)) throw new Exception("Gradient explosion - try lower learning rate.");
+
+            var y = new double[length];
+            for (var i = 0; i < length; i++) y[i] = Math.Exp(vx[i]) / sum;
+            return y;
         }
     }
 }

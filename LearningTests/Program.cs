@@ -1,12 +1,10 @@
-﻿using DG.TBot;
+﻿using DG.TBot.Interpreters;
+using DG.TBot.LSTM;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LearningTests
 {
@@ -35,7 +33,7 @@ namespace LearningTests
                 theCPUCounter = null;
             }
 
-            var interpreter = new DG.TBot.Interpreters.StaticDictionaryInterpreter(text);
+            var interpreter = new CharInterpreter();
             LSTMLearner<char> learner = new LSTMLearner<char>(text.ToCharArray(), interpreter);
             learner.Learning += Learner_Learning;
             learner.Generating += Learner_Generating;
